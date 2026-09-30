@@ -2,28 +2,42 @@
 pipeline {
     agent any
 
-    stages {
+    tools {
+        maven 'maven-3.9'
+    }
 
+    stages {
         stage('Build') {
             steps {
-                echo 'building the application'
+                sh 'mvn clean package'
             }
         }
 
-        stage('test') {
+        stage('Test') {
             steps {
-               echo 'testing the application'
+                sh 'mvn test'
             }
         }
 
-        stage('deploy') {
+        stage('Docker Build') {
             steps {
-                echo 'deploy the application'
+                sh 'docker build -t bisrat1/demo-app:jma-1.1 .'
             }
         }
 
-        
-
-       
+        stage('Docker Push') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-credentials',
+                    usernameVariable: 'USERNAME',
+                    passwordVariable: 'PASSWORD'
+                )]) {
+                    sh '''
+                        echo $PASSWORD | docker login -u $USERNAME --password-stdin
+                        docker push bisrat1/demo-app:jma-1.1
+                    '''
+                }
+            }
+        }
     }
 }
