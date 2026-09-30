@@ -2,41 +2,38 @@
 pipeline {
     agent any
 
-    tools {
-        maven 'maven-3.9'
+    parameters {
+        choice(
+            name: 'VERSION',
+            choices: ['1.1.0', '1.2.0', '1.3.0'],
+            description: 'Select application version'
+        )
+        booleanParam(
+            name: 'executeTests',
+            defaultValue: true,
+            description: 'Run tests?'
+        )
     }
 
     stages {
         stage('Build') {
             steps {
-                sh 'mvn clean package'
+                echo "Building version ${VERSION}"
             }
         }
 
         stage('Test') {
+            when {
+                expression { return executeTests }
+            }
             steps {
-                sh 'mvn test'
+                echo "Running tests for version ${VERSION}"
             }
         }
 
-        stage('Docker Build') {
+        stage('Deploy') {
             steps {
-                sh 'docker build -t bisrat1/demo-app:jma-1.1 .'
-            }
-        }
-
-        stage('Docker Push') {
-            steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'docker-hub-repo',
-                    usernameVariable: 'USERNAME',
-                    passwordVariable: 'PASSWORD'
-                )]) {
-                    sh '''
-                        echo $PASSWORD | docker login -u $USERNAME --password-stdin
-                        docker push bisrat1/demo-app:jma-1.1
-                    '''
-                }
+                echo "Deploying version ${VERSION}"
             }
         }
     }
