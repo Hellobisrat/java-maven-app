@@ -6,7 +6,7 @@ pipeline {
         choice(
             name: 'VERSION',
             choices: ['1.1.0', '1.2.0', '1.3.0'],
-            description: 'Select application version'
+            description: 'Select version'
         )
         booleanParam(
             name: 'executeTests',
@@ -15,10 +15,16 @@ pipeline {
         )
     }
 
+    tools {
+        maven 'maven-3.9'
+    }
+
     stages {
+
         stage('Build') {
             steps {
                 echo "Building version ${VERSION}"
+                sh "mvn clean package"
             }
         }
 
@@ -28,6 +34,28 @@ pipeline {
             }
             steps {
                 echo "Running tests for version ${VERSION}"
+                sh "mvn test"
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                sh "docker build -t bisrat1/demo-app:${VERSION} ."
+            }
+        }
+
+        stage('Docker Push') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-credentials',
+                    usernameVariable: 'USERNAME',
+                    passwordVariable: 'PASSWORD'
+                )]) {
+                    sh """
+                        echo \$PASSWORD | docker login -u \$USERNAME --password-stdin
+                        docker push bisrat1/demo-app:${VERSION}
+                    """
+                }
             }
         }
 
