@@ -1,41 +1,44 @@
 def gv
 
-pipeline {   
+pipeline {
     agent any
+
     tools {
-        maven 'Maven'
+        maven 'maven-3.9'
     }
+
     stages {
-        stage("init") {
+        stage('Build') {
             steps {
-                script {
-                    gv = load "script.groovy"
-                }
-            }
-        }
-        stage("build jar") {
-            steps {
-                script {
-                    gv.buildJar()
-
-                }
+                sh 'mvn clean package'
             }
         }
 
-        stage("build image") {
+        stage('Test') {
             steps {
-                script {
-                    gv.buildImage()
-                }
+                sh 'mvn test'
             }
         }
 
-        stage("deploy") {
+        stage('Docker Build') {
             steps {
-                script {
-                    gv.deployApp()
+                sh 'docker build -t bisrat1/demo-app:jma-1.1 .'
+            }
+        }
+
+        stage('Docker Push') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-credentials',
+                    usernameVariable: 'USERNAME',
+                    passwordVariable: 'PASSWORD'
+                )]) {
+                    sh '''
+                        echo $PASSWORD | docker login -u $USERNAME --password-stdin
+                        docker push bisrat1/demo-app:jma-1.1
+                    '''
                 }
             }
-        }               
+        }
     }
-} 
+}
