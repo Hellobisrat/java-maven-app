@@ -52,6 +52,7 @@ pipeline {
                     passwordVariable: 'PASSWORD'
                 )]) {
                     sh """
+                        docker build -t  hellobisrat/java-maven-app:jma-2.0 .
                         echo \$PASSWORD | docker login -u \$USERNAME --password-stdin
                         docker push bisrat1/demo-app:${VERSION}
                     """
