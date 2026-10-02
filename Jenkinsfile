@@ -45,9 +45,9 @@ pipeline {
                     usernameVariable:'USERNAME'
                 )]) {
                     sh """
-                        docker build -t hellobisrat/java-maven-app:${VERSION} .
+                        docker build -t bisrat1/java-maven-app:${VERSION} .
                         echo \$PASSWORD | docker login -u \$USERNAME --password-stdin
-                        docker push hellobisrat/java-maven-app:${VERSION}
+                        docker push bisrat1/java-maven-app:${VERSION}
                     """
                 }
             }
