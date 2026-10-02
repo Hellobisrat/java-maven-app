@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
     
@@ -21,10 +20,10 @@ pipeline {
 
     stages {
 
-        stage('Build') {
+        stage('Build jar') {
             steps {
-                echo "Building version ${VERSION}"
-                sh "mvn clean package"
+                echo "Building the application version ${VERSION}"
+                sh 'mvn clean package'
             }
         }
 
@@ -38,23 +37,17 @@ pipeline {
             }
         }
 
-        stage('Docker Build') {
-            steps {
-                sh "docker build -t bisrat1/demo-app:${VERSION} ."
-            }
-        }
-
-        stage('Docker Push') {
+        stage('Docker Build & Push') {
             steps {
                 withCredentials([usernamePassword(
-                    credentialsId: 'docker-hub-repo',
-                    usernameVariable: 'USERNAME',
-                    passwordVariable: 'PASSWORD'
+                    credentialsId:'docker-hub-repo',
+                    passwordVariable:'PASSWORD',
+                    usernameVariable:'USERNAME'
                 )]) {
                     sh """
-                        docker build -t  hellobisrat/java-maven-app:jma-2.0 .
+                        docker build -t hellobisrat/java-maven-app:${VERSION} .
                         echo \$PASSWORD | docker login -u \$USERNAME --password-stdin
-                        docker push bisrat1/demo-app:${VERSION}
+                        docker push hellobisrat/java-maven-app:${VERSION}
                     """
                 }
             }
@@ -67,3 +60,4 @@ pipeline {
         }
     }
 }
+
