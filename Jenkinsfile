@@ -1,41 +1,72 @@
-def gv
-
-pipeline {   
+pipeline {
     agent any
+    
+    parameters {
+        choice(
+            name: 'VERSION',
+            choices: ['1.1.0', '1.2.0', '1.3.0'],
+            description: 'Select version'
+        )
+        booleanParam(
+            name: 'executeTests',
+            defaultValue: true,
+            description: 'Run tests?'
+        )
+    }
+
     tools {
-        maven 'Maven'
+        maven 'maven-3.9'
     }
+
     stages {
-        stage("init") {
-            steps {
-                script {
-                    gv = load "script.groovy"
-                }
+         stage('Test') {
+            when {
+                expression { return executeTests }
             }
-        }
-        stage("build jar") {
             steps {
-                script {
-                    gv.buildJar()
-
-                }
+                echo "Running tests for version ${VERSION}"
+                echo "Executing pipeline for branch $BRANCH_NAME"
+                sh "mvn test"
             }
         }
 
-        stage("build image") {
+        stage('Build jar') {
+             when {
+                expression BRANCH_NAME == 'main'
+            }
             steps {
-                script {
-                    gv.buildImage()
+                echo "Building the application version ${VERSION}"
+                sh 'mvn clean package'
+            }
+        }
+
+       
+
+        stage('Docker Build & Push') {
+             when {
+                expression BRANCH_NAME == 'main'
+            }
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId:'docker-hub-repo',
+                    passwordVariable:'PASSWORD',
+                    usernameVariable:'USERNAME'
+                )]) {
+                    sh """
+                        docker build -t bisrat1/java-maven-app:${VERSION} .
+                        echo \$PASSWORD | docker login -u \$USERNAME --password-stdin
+                        docker push bisrat1/java-maven-app:${VERSION}
+                    """
                 }
             }
         }
 
-        stage("deploy") {
+        stage('Deploy') {
             steps {
-                script {
-                    gv.deployApp()
-                }
+                echo "Deploying version ${VERSION}"
             }
-        }               
+        }
     }
-} 
+}
+
+
