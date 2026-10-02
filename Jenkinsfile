@@ -19,25 +19,33 @@ pipeline {
     }
 
     stages {
+         stage('Test') {
+            when {
+                expression { return executeTests }
+            }
+            steps {
+                echo "Running tests for version ${VERSION}"
+                echo "Executing pipeline for branch $BRANCH_NAME"
+                sh "mvn test"
+            }
+        }
 
         stage('Build jar') {
+             when {
+                expression BRANCH_NAME == 'main'
+            }
             steps {
                 echo "Building the application version ${VERSION}"
                 sh 'mvn clean package'
             }
         }
 
-        stage('Test') {
-            when {
-                expression { return executeTests }
-            }
-            steps {
-                echo "Running tests for version ${VERSION}"
-                sh "mvn test"
-            }
-        }
+       
 
         stage('Docker Build & Push') {
+             when {
+                expression BRANCH_NAME == 'main'
+            }
             steps {
                 withCredentials([usernamePassword(
                     credentialsId:'docker-hub-repo',
