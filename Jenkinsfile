@@ -20,9 +20,7 @@ pipeline {
 
     stages {
          stage('Test') {
-           when {
-              expression { BRANCH_NAME == 'main' }
-           }
+          
 
             steps {
                 echo "Running tests for version ${VERSION}"
@@ -32,9 +30,9 @@ pipeline {
         }
 
         stage('Build jar') {
-             when {
-                expression BRANCH_NAME == 'main'
-            }
+            when {
+              expression { BRANCH_NAME == 'main' }
+           }
             steps {
                 echo "Building the application version ${VERSION}"
                 sh 'mvn clean package'
@@ -44,9 +42,9 @@ pipeline {
        
 
         stage('Docker Build & Push') {
-             when {
-                expression BRANCH_NAME == 'main'
-            }
+              when {
+              expression { BRANCH_NAME == 'main' }
+           }
             steps {
                 withCredentials([usernamePassword(
                     credentialsId:'docker-hub-repo',
