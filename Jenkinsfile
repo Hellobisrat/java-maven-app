@@ -1,44 +1,72 @@
-def gv
-
 pipeline {
     agent any
+    
+    parameters {
+        choice(
+            name: 'VERSION',
+            choices: ['1.1.0', '1.2.0', '1.3.0'],
+            description: 'Select version'
+        )
+        booleanParam(
+            name: 'executeTests',
+            defaultValue: true,
+            description: 'Run tests?'
+        )
+    }
 
     tools {
         maven 'maven-3.9'
     }
 
     stages {
-        stage('Build') {
+         stage('Test') {
+            when {
+                expression { return executeTests }
+            }
             steps {
+                echo "Running tests for version ${VERSION}"
+                echo "Executing pipeline for branch $BRANCH_NAME"
+                sh "mvn test"
+            }
+        }
+
+        stage('Build jar') {
+             when {
+                expression BRANCH_NAME == 'main'
+            }
+            steps {
+                echo "Building the application version ${VERSION}"
                 sh 'mvn clean package'
             }
         }
 
-        stage('Test') {
-            steps {
-                sh 'mvn test'
-            }
-        }
+       
 
-        stage('Docker Build') {
-            steps {
-                sh 'docker build -t bisrat1/demo-app:jma-1.1 .'
+        stage('Docker Build & Push') {
+             when {
+                expression BRANCH_NAME == 'main'
             }
-        }
-
-        stage('Docker Push') {
             steps {
                 withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub-credentials',
-                    usernameVariable: 'USERNAME',
-                    passwordVariable: 'PASSWORD'
+                    credentialsId:'docker-hub-repo',
+                    passwordVariable:'PASSWORD',
+                    usernameVariable:'USERNAME'
                 )]) {
-                    sh '''
-                        echo $PASSWORD | docker login -u $USERNAME --password-stdin
-                        docker push bisrat1/demo-app:jma-1.1
-                    '''
+                    sh """
+                        docker build -t bisrat1/java-maven-app:${VERSION} .
+                        echo \$PASSWORD | docker login -u \$USERNAME --password-stdin
+                        docker push bisrat1/java-maven-app:${VERSION}
+                    """
                 }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo "Deploying version ${VERSION}"
             }
         }
     }
 }
+
+
