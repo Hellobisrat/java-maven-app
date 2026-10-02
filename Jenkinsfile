@@ -23,7 +23,6 @@ pipeline {
            
             steps {
                 echo "Running tests for version ${VERSION}"
-                echo "Executing pipeline for branch $BRANCH_NAME"
                 sh "mvn test"
             }
         }
