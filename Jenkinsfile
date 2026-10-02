@@ -33,7 +33,7 @@ pipeline {
 
         stage('Build jar') {
              when {
-                expression BRANCH_NAME == 'main'
+                expression { BRANCH_NAME == 'main' }
             }
             steps {
                 echo "Building the application version ${VERSION}"
