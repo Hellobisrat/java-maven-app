@@ -20,9 +20,7 @@ pipeline {
 
     stages {
          stage('Test') {
-            when {
-                expression { return executeTests }
-            }
+           
             steps {
                 echo "Running tests for version ${VERSION}"
                 echo "Executing pipeline for branch $BRANCH_NAME"
