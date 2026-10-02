@@ -44,9 +44,9 @@ pipeline {
        
 
         stage('Docker Build & Push') {
-             when {
-                expression BRANCH_NAME == 'main'
-            }
+            when {
+              expression { BRANCH_NAME == 'main' }
+                }
             steps {
                 withCredentials([usernamePassword(
                     credentialsId:'docker-hub-repo',
