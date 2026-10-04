@@ -44,7 +44,7 @@ pipeline {
            
             steps {
                script{
-                  buildImage()
+                  buildImage 'bisrat/demo-app:jama-2.0'
                }
             }
         }
