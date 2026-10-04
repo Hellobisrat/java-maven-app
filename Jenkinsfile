@@ -44,7 +44,7 @@ pipeline {
            
             steps {
                script{
-                  buildImage 'bisrat/demo-app:jama-2.0'
+                  buildImage 'bisrat1/java-maven-app:jama-3.0'
                }
             }
         }
