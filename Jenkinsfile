@@ -1,3 +1,6 @@
+def gv
+@Library('jenkins-shared-library') _
+
 pipeline {
     agent any
     
@@ -20,54 +23,39 @@ pipeline {
 
     stages {
 
-        stage('Test') {
-            when {
-                branch 'main'
-            }
-            steps {
-                echo "Running tests for version ${VERSION}"
-                echo "Executing pipeline for branch ${env.BRANCH_NAME}"
-                sh "mvn test"
-            }
-        }
-
-        stage('Build jar') {
-            when {
-                expression { env.BRANCH_NAME == 'main' }
-            }
-            steps {
-                echo "Building the application version ${VERSION}"
-                sh 'mvn clean package'
-            }
-        }
-
-        stage('Docker Build & Push') {
-            when {
-                expression { env.BRANCH_NAME == 'main' }
-            }
-            steps {
-                withCredentials([usernamePassword(
-                    credentialsId:'docker-hub-repo',
-                    passwordVariable:'PASSWORD',
-                    usernameVariable:'USERNAME'
-                )]) {
-                    sh """
-                        docker build -t bisrat1/java-maven-app:${VERSION} .
-                        echo \$PASSWORD | docker login -u \$USERNAME --password-stdin
-                        docker push bisrat1/java-maven-app:${VERSION}
-                    """
-                }
-            }
-        }
-
-        stage('Deploy') {
-            when {
-                branch 'main'
-            }
-            steps {
-                echo "Deploying version ${VERSION}"
-            }
+        stage('init') {
+    steps {
+        script {
+            gv = load "script.groovy"
         }
     }
 }
 
+
+        stage('Build jar') {
+           
+            steps {
+               buildJar()
+
+            }
+        }
+
+        stage('build image') {
+           
+            steps {
+               script{
+                  buildImage()
+               }
+            }
+        }
+
+        stage('Deploy') {
+           
+            steps {
+               script{
+                deployApp()
+               }
+            }
+        }
+    }
+}
