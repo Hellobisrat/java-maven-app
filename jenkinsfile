@@ -1,28 +1,61 @@
+def gv
+@Library('jenkins-shared-library') _
+
 pipeline {
     agent any
+    
+    parameters {
+        choice(
+            name: 'VERSION',
+            choices: ['1.1.0', '1.2.0', '1.3.0'],
+            description: 'Select version'
+        )
+        booleanParam(
+            name: 'executeTests',
+            defaultValue: true,
+            description: 'Run tests?'
+        )
+    }
+
+    tools {
+        maven 'maven-3.9'
+    }
 
     stages {
 
-        stage('Build') {
+        stage('init') {
+    steps {
+        script {
+            gv = load "script.groovy"
+        }
+    }
+}
+
+
+        stage('Build jar') {
+           
             steps {
-                echo 'building the application'
+               buildJar()
+
             }
         }
 
-        stage('test') {
+        stage('build image') {
+           
             steps {
-               echo 'testing the application'
+               script{
+                  buildImage()
+               }
             }
         }
 
-        stage('deploy') {
+        stage('Deploy') {
+           
             steps {
-                echo 'deploy the application'
+               script{
+                deployApp()
+               }
             }
         }
-
-        
-
-       
     }
 }
