@@ -1,3 +1,6 @@
+def gv
+@Library('jenkins-shared-library')
+
 pipeline {
     agent any
     
@@ -20,52 +23,36 @@ pipeline {
 
     stages {
 
-        stage('Test') {
-            when {
-                branch 'main'
-            }
+        stage('init') {
+           
             steps {
-                echo "Running tests for version ${VERSION}"
-                echo "Executing pipeline for branch ${env.BRANCH_NAME}"
-                sh "mvn test"
+               gv = load "script.groovy"
             }
         }
 
         stage('Build jar') {
-            when {
-                expression { env.BRANCH_NAME == 'main' }
-            }
+           
             steps {
-                echo "Building the application version ${VERSION}"
-                sh 'mvn clean package'
+               buildJar()
+
             }
         }
 
-        stage('Docker Build & Push') {
-            when {
-                expression { env.BRANCH_NAME == 'main' }
-            }
+        stage('build image') {
+           
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId:'docker-hub-repo',
-                    passwordVariable:'PASSWORD',
-                    usernameVariable:'USERNAME'
-                )]) {
-                    sh """
-                        docker build -t bisrat1/java-maven-app:${VERSION} .
-                        echo \$PASSWORD | docker login -u \$USERNAME --password-stdin
-                        docker push bisrat1/java-maven-app:${VERSION}
-                    """
-                }
+               script{
+                  buildImage()
+               }
             }
         }
 
         stage('Deploy') {
-            when {
-                branch 'main'
-            }
+           
             steps {
-                echo "Deploying version ${VERSION}"
+               script{
+                deployApp()
+               }
             }
         }
     }
