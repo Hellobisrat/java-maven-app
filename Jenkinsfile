@@ -29,7 +29,12 @@ pipeline {
             gv = load "script.groovy"
         }
     }
-}
+} 
+        stage('test'){
+            steps{
+                echo 'test integration'
+            }
+        }
 
 
         stage('Build jar') {
