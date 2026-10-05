@@ -35,7 +35,7 @@ pipeline {
                 expression { params.executeTests }
             }
             steps {
-                echo "Running tests..."
+                echo "Running tests  after change ....."
             }
         }}
 
