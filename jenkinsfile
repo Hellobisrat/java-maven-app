@@ -21,9 +21,7 @@ pipeline {
     stages {
 
         stage('Test') {
-            when {
-                branch 'main'
-            }
+            
             steps {
                 echo "Running tests for version ${VERSION}"
                 echo "Executing pipeline for branch ${env.BRANCH_NAME}"
