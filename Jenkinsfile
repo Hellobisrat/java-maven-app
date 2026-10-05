@@ -38,15 +38,15 @@ pipeline {
                 echo "Running tests after change for the third ....."
             }
         }
-       stage('increment version') {
+      stage('increment version') {
     steps {
         script {
             echo 'incrementing app version...'
 
             sh '''
-                mvn build-helper:parse-version versions:set \
-                    -DnewVersion=${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.nextIncrementalVersion} \
-                    versions:commit
+                mvn build-helper:parse-version
+                mvn versions:set -DnewVersion=$(mvn help:evaluate -Dexpression=parsedVersion.nextIncrementalVersion -q -DforceStdout)
+                mvn versions:commit
             '''
 
             def matcher = readFile('pom.xml') =~ '<version>(.+)</version>'
@@ -55,6 +55,7 @@ pipeline {
         }
     }
 }
+
 
         stage('build app'){
             steps {
