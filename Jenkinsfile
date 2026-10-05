@@ -45,16 +45,17 @@ pipeline {
 
             sh '''
                 mvn build-helper:parse-version
-                mvn versions:set -DnewVersion=$(mvn help:evaluate -Dexpression=parsedVersion.nextIncrementalVersion -q -DforceStdout)
+                mvn versions:set -DnewVersion=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)-${BUILD_NUMBER}
                 mvn versions:commit
             '''
 
             def matcher = readFile('pom.xml') =~ '<version>(.+)</version>'
             def version = matcher[0][1]
-            env.IMAGE_NAME = "${version}-${BUILD_NUMBER}"
+            env.IMAGE_NAME = "${version}"
         }
     }
 }
+
 
 
         stage('build app'){
