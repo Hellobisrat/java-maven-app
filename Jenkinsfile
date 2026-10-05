@@ -30,11 +30,14 @@ pipeline {
         }
     }
 } 
-        stage('test'){
-            steps{
-                echo 'test integration 2'
+        stage('test') {
+            when {
+                expression { params.executeTests }
             }
-        }
+            steps {
+                echo "Running tests..."
+            }
+        }}
 
 
         stage('Build jar') {
