@@ -1,4 +1,3 @@
-def gv
 @Library('jenkins-shared-library') _
 
 pipeline {
@@ -24,47 +23,43 @@ pipeline {
     stages {
 
         stage('init') {
-    steps {
-        script {
-            gv = load "script.groovy"
+            steps {
+                script {
+                    gv = load "script.groovy"
+                }
+            }
         }
-    }
-} 
+
         stage('test') {
             when {
                 expression { params.executeTests }
             }
             steps {
-                echo "Running tests  after change for the third ....."
+                echo "Running tests after change for the third ....."
             }
         }
 
-
         stage('Build jar') {
-           
             steps {
-               buildJar()
-
+                buildJar()
             }
         }
 
         stage('build image') {
-           
             steps {
-               script{
-                  buildImage 'bisrat1/java-maven-app:jama-3.0'
-                  dockerLogin()
-                  dockerPush 'bisrat1/java-maven-app:jama-3.0'
-               }
+                script {
+                    buildImage 'bisrat1/java-maven-app:jama-3.0'
+                    dockerLogin()
+                    dockerPush 'bisrat1/java-maven-app:jama-3.0'
+                }
             }
         }
 
         stage('Deploy') {
-           
             steps {
-               script{
-                deployApp()
-               }
+                script {
+                    deployApp()
+                }
             }
         }
     }
