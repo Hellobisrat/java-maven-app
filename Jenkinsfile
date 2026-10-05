@@ -37,7 +37,7 @@ pipeline {
             steps {
                 echo "Running tests  after change ....."
             }
-        }}
+        }
 
 
         stage('Build jar') {
