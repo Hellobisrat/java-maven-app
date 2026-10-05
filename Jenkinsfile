@@ -45,6 +45,8 @@ pipeline {
             steps {
                script{
                   buildImage 'bisrat1/java-maven-app:jama-3.0'
+                  dockerLogin()
+                  dockerPush 'bisrat1/java-maven-app:jama-3.0'
                }
             }
         }
