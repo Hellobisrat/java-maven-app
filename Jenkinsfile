@@ -35,7 +35,35 @@ pipeline {
                 expression { params.executeTests }
             }
             steps {
-                echo "Running tests after change for the third times from git hub....."
+                echo "Running tests after change for the third ....."
+            }
+        }
+      stage('increment version') {
+    steps {
+        script {
+            echo 'incrementing app version...'
+
+            sh '''
+                mvn build-helper:parse-version
+                mvn versions:set -DnewVersion=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)-${BUILD_NUMBER}
+                mvn versions:commit
+            '''
+
+            def matcher = readFile('pom.xml') =~ '<version>(.+)</version>'
+            def version = matcher[0][1]
+            env.IMAGE_NAME = "${version}"
+        }
+    }
+}
+
+
+
+        stage('build app'){
+            steps {
+                script {
+                    echo 'building the application...'
+                    sh 'mvn clean package'
+                }
             }
         }
 
@@ -48,12 +76,13 @@ pipeline {
         stage('build image') {
             steps {
                 script {
-                    buildImage 'bisrat1/java-maven-app:jama-3.0'
+                    buildImage "bisrat1/java-maven-app:${IMAGE_NAME}"
                     dockerLogin()
-                    dockerPush 'bisrat1/java-maven-app:jama-3.0'
+                    dockerPush "bisrat1/java-maven-app:${IMAGE_NAME}"
                 }
             }
         }
+        
 
         stage('Deploy') {
             steps {
