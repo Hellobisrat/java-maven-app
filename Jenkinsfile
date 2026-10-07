@@ -30,9 +30,7 @@ pipeline {
         }
 
         stage('Build jar') {
-            when {
-                expression { env.BRANCH_NAME == 'main' }
-            }
+          
             steps {
                 echo "Building the application version ${VERSION}"
                 sh 'mvn clean package'
@@ -40,9 +38,7 @@ pipeline {
         }
 
         stage('Docker Build & Push') {
-            when {
-                expression { env.BRANCH_NAME == 'main' }
-            }
+          
             steps {
                 withCredentials([usernamePassword(
                     credentialsId:'docker-hub-repo',
@@ -59,12 +55,18 @@ pipeline {
         }
 
         stage('Deploy') {
-            when {
-                branch 'main'
-            }
-            steps {
-                echo "Deploying version ${VERSION}"
-            }
+           steps {
+              script {
+                  echo 'deploying docker image to EC2...'
+                  
+                  def dockerComposeCmd ="docker-compose -f docker.compose.yaml up --detach"
+                  sshagent(credentials: ['ec2-server-key'], executable: '') {
+                    // some block
+                     sh "scp docker-compose.yaml  ec2-user@54.85.3.217:/home/ec2-user"
+                     sh "ssh -o StrictHostKeyChecking=no ec2-user@54.85.3.217 ${dockerComposeCmd}"
+                     }
+                   }
+              }
         }
     }
 }
