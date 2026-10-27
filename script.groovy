@@ -14,7 +14,7 @@ def deployApp() {
 AWS_SECRET_ACCESS_KEY = credentials('jenkins-aws_secret_access_key')
     }
     steps {
-        echo 'deploying the application...'
+        echo 'deploying step changed'
     sh 'kubectl create deployment ngnix-deployment --image nginx'
     }
     
