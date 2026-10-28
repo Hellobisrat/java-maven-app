@@ -11,6 +11,8 @@ pipeline {
         APP_NAME = 'java-maven-app'
         AWS_ACCESS_KEY_ID = credentials('jenkins_aws_access_key_id')
         AWS_SECRET_ACCESS_KEY = credentials('jenkins_aws_secret_access_key')
+        DOCKER_REPO = 'bisrat1/java-maven-app'
+        DOCKER_REPO_SERVER = 'https://index.docker.io/v1/'
     }
 
     stages {
