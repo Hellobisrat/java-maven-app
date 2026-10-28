@@ -1,9 +1,9 @@
 def buildJar() {
-    echo 'building the application...'
+    echo 'building the application ...'
 }
 
 def buildImage() {
-    echo "building the docker image  update..."
+    echo "building the docker image new update..."
 }
 
 def deployApp() {
