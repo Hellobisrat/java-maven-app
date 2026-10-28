@@ -3,7 +3,7 @@ def buildJar() {
 }
 
 def buildImage() {
-    echo "building the docker image..."
+    echo "building the docker image  update..."
 }
 
 def deployApp() {
