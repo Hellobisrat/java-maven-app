@@ -89,7 +89,7 @@ pipeline {
                     git config user.email "zerbisrat@gmail.com"
                     git config user.name "Hellobisrat"
 
-                    git remote set-url origin https://${USER}:${PASS}@github.com/Hellobisrat/java-maven-app2.git
+                    git remote set-url origin https://${USER}:${PASS}@github.com/Hellobisrat/java-maven-app.git
 
 
                     # Stash local changes (version bump)
