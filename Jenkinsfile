@@ -54,27 +54,64 @@ pipeline {
         }
 
         stage('deploy') {
-            steps {
-                script {
-                    echo 'deploying docker image...'
-                    sh 'envsubst < kubernetes/deployment.yaml | kubectl apply -f -'
-                    sh 'envsubst < kubernetes/service.yaml | kubectl apply -f -'
+    steps {
+        echo 'deploying step changed'
 
-                }
-            }
+        withCredentials([
+            string(credentialsId: 'jenkins_aws_access_key_id', variable: 'AWS_ACCESS_KEY_ID'),
+            string(credentialsId: 'jenkins_aws_secret_access_key', variable: 'AWS_SECRET_ACCESS_KEY')
+        ]) {
+            sh '''
+                echo "Using AWS credentials..."
+                export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+                export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+                export AWS_DEFAULT_REGION=us-east-1
+
+                kubectl version --client
+                aws sts get-caller-identity
+
+                envsubst < kubernetes/deployment.yaml | kubectl apply -f -
+            '''
         }
+    }
+}
+
+
+
 
         stage('commit version update') {
-            steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: 'github-credentials', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
-                        sh "git remote set-url origin https://${USER}:${PASS}@github.com/Hellobisrat/java-maven-app.git"
-                        sh 'git add .'
-                        sh 'git commit -m "ci: version bump" || true'
-                        sh 'git push origin HEAD:main'
-                    }
-                }
+    steps {
+        script {
+            withCredentials([usernamePassword(credentialsId: 'github-credentials', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+
+                
+                sh '''
+                    git config user.email "zerbisrat@gmail.com"
+                    git config user.name "Hellobisrat"
+
+                    git remote set-url origin https://${USER}:${PASS}@github.com/Hellobisrat/java-maven-app2.git
+
+
+                    # Stash local changes (version bump)
+                    git stash
+
+                    # Pull latest changes from GitHub
+                    git pull origin main --rebase
+
+                    # Re-apply stashed changes
+                    git stash pop || true
+
+                    # Stage and commit version bump
+                    git add .
+                    git commit -m "ci: version bump" || true
+
+                    # Push updated version
+                    git push origin HEAD:main
+                '''
             }
         }
+    }
+}
+
     }
 }
