@@ -11,8 +11,8 @@ pipeline {
         APP_NAME = 'java-maven-app'
         AWS_ACCESS_KEY_ID = credentials('jenkins_aws_access_key_id')
         AWS_SECRET_ACCESS_KEY = credentials('jenkins_aws_secret_access_key')
-        DOCKER_REPO = '${DOCKER_REPO_SERVER}/java-maven-app'
         DOCKER_REPO_SERVER = '125482557187.dkr.ecr.us-east-1.amazonaws.com'
+        DOCKER_REPO = '125482557187.dkr.ecr.us-east-1.amazonaws.com/java-maven-app'
     }
 
     stages {
@@ -41,14 +41,18 @@ pipeline {
 
         stage('build image') {
             steps {
-                script {
-                    echo "building the docker image...update"
-                    withCredentials([usernamePassword(credentialsId: 'ecr-credentials', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
-                        sh "docker build -t ${DOCKER_REPO}:${IMAGE_NAME} ."
-                        sh "echo $PASS | docker login -u $USER --password-stdin ${DOCKER_REPO_SERVER}"
-                        sh "docker push ${DOCKER_REPO}:${IMAGE_NAME}"
-                    }
-                }
+                withCredentials([string(credentialsId: 'jenkins_aws_secret_access_key', variable: 'AWS_SECRET_ACCESS_KEY'),
+                 string(credentialsId: 'jenkins_aws_access_key_id', variable: 'AWS_ACCESS_KEY_ID')]) {
+
+    sh """
+        aws ecr get-login-password --region us-east-1 | \
+        docker login --username AWS --password-stdin 125482557187.dkr.ecr.us-east-1.amazonaws.com
+
+        docker build -t 125482557187.dkr.ecr.us-east-1.amazonaws.com/java-maven-app:${IMAGE_NAME} .
+        docker push 125482557187.dkr.ecr.us-east-1.amazonaws.com/java-maven-app:${IMAGE_NAME}
+    """
+}
+
             }
         }
 
