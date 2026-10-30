@@ -4,15 +4,15 @@ pipeline {
     agent any
 
     tools {
-        maven 'maven-3.9'
+        maven 'maven'
     }
 
     environment {
         APP_NAME = 'java-maven-app'
         AWS_ACCESS_KEY_ID = credentials('jenkins_aws_access_key_id')
         AWS_SECRET_ACCESS_KEY = credentials('jenkins_aws_secret_access_key')
-        DOCKER_REPO = 'bisrat1/java-maven-app'
-        DOCKER_REPO_SERVER = 'https://index.docker.io/v1/'
+        DOCKER_REPO = '${DOCKER_REPO_SERVER}/java-maven-app'
+        DOCKER_REPO_SERVER = '125482557187.dkr.ecr.us-east-1.amazonaws.com'
     }
 
     stages {
@@ -44,7 +44,7 @@ pipeline {
             steps {
                 script {
                     echo "building the docker image...update"
-                    withCredentials([usernamePassword(credentialsId: 'docker-hub-repo', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+                    withCredentials([usernamePassword(credentialsId: 'ecr-credentials', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
                         sh "docker build -t ${DOCKER_REPO}:${IMAGE_NAME} ."
                         sh "echo $PASS | docker login -u $USER --password-stdin ${DOCKER_REPO_SERVER}"
                         sh "docker push ${DOCKER_REPO}:${IMAGE_NAME}"
